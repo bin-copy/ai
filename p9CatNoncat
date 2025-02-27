@@ -4,8 +4,8 @@ import h5py
 from sklearn.linear_model import LogisticRegression
 def load_dataset():
  # Load datasets from the file paths
- train_dataset = h5py.File('C:/Users/khanb/Downloads/train_catvnoncat.h5', "r")
- test_dataset = h5py.File('C:/Users/khanb/Downloads/test_catvnoncat.h5', "r")
+ train_dataset = h5py.File('C:/UsersDownloads/train_catvnoncat.h5', "r")
+ test_dataset = h5py.File('C:/Users/Downloads/test_catvnoncat.h5', "r")
  # Extract the classes and labels
  classes = np.array(test_dataset["list_classes"][:])
  train_set_y_orig = np.array(train_dataset["train_set_y"][:]).reshape(-1) # Flattened to shape (n_samples,)
