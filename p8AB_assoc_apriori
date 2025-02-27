@@ -1,0 +1,48 @@
+import pandas as pd
+from apyori import apriori
+# Load the dataset
+file_path = 'E:/TYCS_527_AI/pima-indians-diabetes.csv.xlsx'
+try:
+ # Adjust file reading based on the actual format
+ collectedDataset = pd.read_excel(file_path, header=None) # Use pd.read_csv if it's a CSV file
+except Exception as e:
+ print(f"Error loading file: {e}")
+ exit()
+# Convert the dataset to a list of transactions
+onlineTransactions = collectedDataset.map(str).values.tolist()
+# Train the Apriori algorithm on the dataset
+associationRules = apriori(
+ onlineTransactions,
+ min_support=0.003,
+ min_confidence=0.2,
+ min_lift=3,
+ min_length=2
+)
+# Convert the results of the Apriori algorithm to a list
+associationRuleResults = list(associationRules)
+# Display the number of association rules derived
+print(f"There are {len(associationRuleResults)} relation(s) derived.\n")
+# Output the detailed association rules
+output = []
+for rule in associationRuleResults:
+ rule_base = list(rule.items)
+ if len(rule.ordered_statistics) > 0:
+     for stat in rule.ordered_statistics:
+         rule_info = {
+         'Rule': f"{list(stat.items_base)} -> {list(stat.items_add)}",
+         'Support': rule.support,
+         'Confidence': stat.confidence,
+         'Lift': stat.lift
+         }
+         output.append(rule_info)
+         print(f"Rule: {rule_info['Rule']}")
+         print(f"Support: {rule_info['Support']}")
+         print(f"Confidence: {rule_info['Confidence']}")
+         print(f"Lift: {rule_info['Lift']}")
+         print("=" * 30)
+# Optionally, print the results as a DataFrame for better readability
+if output:
+ association_rules_df = pd.DataFrame(output)
+ print(association_rules_df)
+else:
+ print("No rules found.")
