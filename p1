@@ -1,0 +1,227 @@
+import heapq
+import networkx as nx
+import matplotlib.pyplot as plt
+from collections import deque
+
+# Romanian map graph (cities and their roads with distances)
+graph = {
+    "Arad": [("Zerind", 75), ("Sibiu", 140), ("Timisoara", 118)],
+    "Bucharest": [("Fagaras", 211), ("Giurgiu", 90), ("Pitesti", 101)],
+    "Craiova": [("Dobreta", 120), ("Rimnicu Vilcea", 146)],
+    "Dobreta": [("Craiova", 120), ("Mehadia", 75)],
+    "Eforie": [("Hirsova", 86)],
+    "Fagaras": [("Bucharest", 211), ("Sibiu", 99)],
+    "Giurgiu": [("Bucharest", 90)],
+    "Hirsova": [("Eforie", 86), ("Urziceni", 98)],
+    "Iasi": [("Neamt", 87)],
+    "Lugoj": [("Mehadia", 70), ("Timisoara", 111)],
+    "Mehadia": [("Lugoj", 70), ("Dobreta", 75)],
+    "Neamt": [("Iasi", 87)],
+    "Oradea": [("Zerind", 71), ("Sibiu", 151)],
+    "Pitesti": [("Bucharest", 101), ("Craiova", 138), ("Rimnicu Vilcea", 97)],
+    "Rimnicu Vilcea": [("Pitesti", 97), ("Craiova", 146), ("Sibiu", 80)],
+    "Sibiu": [("Fagaras", 99), ("Arad", 140), ("Rimnicu Vilcea", 80), ("Oradea", 151)],
+    "Timisoara": [("Arad", 118), ("Lugoj", 111)],
+    "Urziceni": [("Hirsova", 98), ("Bucharest", 85), ("Vaslui", 142)],
+    "Vaslui": [("Urziceni", 142), ("Iasi", 92)],
+    "Zerind": [("Arad", 75), ("Oradea", 71)]
+}
+
+# Create a networkx graph from the dictionary
+def create_nx_graph(graph):
+    G = nx.Graph()
+    for node, neighbors in graph.items():
+        for neighbor, weight in neighbors:
+            G.add_edge(node, neighbor, weight=weight)
+    return G
+
+# Visualization function for graph
+def visualize_graph(graph, path=None):
+    G = create_nx_graph(graph)
+
+    # Draw the base graph
+    pos = nx.spring_layout(G)  # Positioning for nodes
+    plt.figure(figsize=(12, 8))
+    nx.draw(G, pos, with_labels=True, node_size=2000, node_color='lightblue', font_size=10, font_weight='bold')
+
+    # If a path is given, highlight it
+    if path:
+        edge_labels = nx.get_edge_attributes(G, 'weight')
+        edges = [(path[i], path[i+1]) for i in range(len(path) - 1)]
+        nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color='r', width=3)
+        nx.draw_networkx_labels(G, pos, font_color='black')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
+    # Show the graph
+    plt.title("Romanian Cities Map with Path Highlighted", fontsize=15)
+    plt.show()
+
+# 1. Breadth-First Search (BFS) with total distance
+def bfs(graph, start, goal):
+    visited = set()
+    queue = deque([(start, [start], 0)])  # Queue of (city, path, total_distance)
+
+    while queue:
+        current_city, path, total_distance = queue.popleft()
+
+        if current_city == goal:
+            return path, total_distance
+
+        visited.add(current_city)
+
+        for neighbor, travel_cost in graph[current_city]:
+            if neighbor not in visited:
+                queue.append((neighbor, path + [neighbor], total_distance + travel_cost))
+
+    return None, 0  # No path found
+
+# 2. Depth-First Search (DFS) with total distance
+def dfs(graph, start, goal, visited=None, total_distance=0):
+    if visited is None:
+        visited = set()
+
+    visited.add(start)
+
+    if start == goal:
+        return [start], total_distance
+
+    for neighbor, travel_cost in graph[start]:
+        if neighbor not in visited:
+            path, path_distance = dfs(graph, neighbor, goal, visited, total_distance + travel_cost)
+            if path:
+                return [start] + path, path_distance
+
+    return None, 0  # No path found
+
+# 3. Uniform Cost Search (UCS) with total distance
+def ucs(graph, start, goal):
+    pq = [(0, start, [])]  # Priority queue of (cost, city, path)
+    visited = set()
+
+    while pq:
+        cost, current_city, path = heapq.heappop(pq)
+
+        if current_city == goal:
+            return path + [current_city], cost
+
+        if current_city not in visited:
+            visited.add(current_city)
+
+            for neighbor, travel_cost in graph[current_city]:
+                if neighbor not in visited:
+                    heapq.heappush(pq, (cost + travel_cost, neighbor, path + [current_city]))
+
+    return None, 0  # No path found
+
+# 4. Depth-Limited Search (DLS) with total distance
+def dls(graph, start, goal, depth_limit):
+    def dls_recursive(node, goal, depth, path, total_distance):
+        if depth == 0:
+            return None, 0
+        if node == goal:
+            return path + [node], total_distance
+
+        for neighbor, travel_cost in graph[node]:
+            result, result_distance = dls_recursive(neighbor, goal, depth-1, path + [node], total_distance + travel_cost)
+            if result:
+                return result, result_distance
+        return None, 0
+
+    return dls_recursive(start, goal, depth_limit, [], 0)
+
+# 5. Iterative Deepening Search (IDS) with total distance
+def ids(graph, start, goal):
+    depth = 0
+    while True:
+        result, distance = dls(graph, start, goal, depth)
+        if result is not None:
+            return result, distance
+        depth += 1
+
+# 6. Bi-directional Search (BDS) with total distance
+def bidirectional_search(graph, start, goal):
+    if start == goal:
+        return [start], 0
+
+    # Forward direction
+    forward_queue = deque([(start, [start], 0)])
+    forward_visited = {start: [start]}
+    forward_cost = {start: 0}
+
+    # Backward direction
+    backward_queue = deque([(goal, [goal], 0)])
+    backward_visited = {goal: [goal]}
+    backward_cost = {goal: 0}
+
+    while forward_queue and backward_queue:
+        # Forward search
+        current_city, forward_path, forward_distance = forward_queue.popleft()
+
+        if current_city in backward_visited:
+            return forward_path + backward_visited[current_city][::-1][1:], forward_distance + backward_cost[current_city]
+
+        for neighbor, travel_cost in graph[current_city]:
+            if neighbor not in forward_visited:
+                forward_visited[neighbor] = forward_path + [neighbor]
+                forward_cost[neighbor] = forward_distance + travel_cost
+                forward_queue.append((neighbor, forward_path + [neighbor], forward_distance + travel_cost))
+
+        # Backward search
+        current_city, backward_path, backward_distance = backward_queue.popleft()
+
+        if current_city in forward_visited:
+            return forward_visited[current_city] + backward_path[::-1][1:], forward_distance + backward_distance
+
+        for neighbor, travel_cost in graph[current_city]:
+            if neighbor not in backward_visited:
+                backward_visited[neighbor] = backward_path + [neighbor]
+                backward_cost[neighbor] = backward_distance + travel_cost
+                backward_queue.append((neighbor, backward_path + [neighbor], backward_distance + travel_cost))
+
+    return None, 0  # No path found
+
+# Function to test all search algorithms with total distance and visualization
+def test_search_algorithms(start, goal):
+    print(f"Searching from {start} to {goal}...\n")
+
+    # Test BFS
+    path, distance = bfs(graph, start, goal)
+    print("Breadth First Search:", path)
+    print("Breadth First Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+    # Test DFS
+    path, distance = dfs(graph, start, goal)
+    print("Depth First Search:", path)
+    print("Depth First Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+    # Test UCS
+    path, distance = ucs(graph, start, goal)
+    print("Uniform Cost Search:", path)
+    print("Uniform Cost Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+    # Test DLS
+    path, distance = dls(graph, start, goal, 5)
+    print("Depth-Limited Search (depth limit 5):", path)
+    print("Depth-Limited Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+    # Test IDS
+    path, distance = ids(graph, start, goal)
+    print("Iterative Deepening Search:", path)
+    print("Iterative Deepening Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+    # Test Bi-directional Search
+    path, distance = bidirectional_search(graph, start, goal)
+    print("Bi-directional Search:", path)
+    print("Bi-directional Search Total Distance:", distance)
+    visualize_graph(graph, path)
+
+# Example test run
+if __name__ == "__main__":
+    start = "Arad"
+    goal = "Bucharest"
+    test_search_algorithms(start, goal)
