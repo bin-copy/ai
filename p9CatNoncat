@@ -1,0 +1,60 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import h5py
+from sklearn.linear_model import LogisticRegression
+def load_dataset():
+ # Load datasets from the file paths
+ train_dataset = h5py.File('C:/Users/khanb/Downloads/train_catvnoncat.h5', "r")
+ test_dataset = h5py.File('C:/Users/khanb/Downloads/test_catvnoncat.h5', "r")
+ # Extract the classes and labels
+ classes = np.array(test_dataset["list_classes"][:])
+ train_set_y_orig = np.array(train_dataset["train_set_y"][:]).reshape(-1) # Flattened to shape (n_samples,)
+ test_set_y_orig = np.array(test_dataset["test_set_y"][:]).reshape(-1) # Flattened to shape (n_samples,)
+ return (
+ np.array(train_dataset["train_set_x"][:]),
+ train_set_y_orig,
+ np.array(test_dataset["test_set_x"][:]),
+ test_set_y_orig,
+ classes
+ )
+def preprocess_data(train_set_x_orig, test_set_x_orig):
+ # Flatten the datasets (from (m, n, n, 3) to (m, n*n*3)) and scale
+ train_set_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1) # Shape: (m_train, n_features)
+ test_set_x_flatten = test_set_x_orig.reshape(test_set_x_orig.shape[0], -1) # Shape: (m_test, n_features)
+ return train_set_x_flatten / 255., test_set_x_flatten / 255. # Normalize
+def logistic_regression(train_set_x, train_set_y, test_set_x, test_set_y):
+ # Initialize Logistic Regression model
+ lr = LogisticRegression(C=1000.0, random_state=0, max_iter=500)
+ # Fit the model
+ lr.fit(train_set_x, train_set_y)
+ # Predict using the model
+ Y_prediction = lr.predict(test_set_x)
+ # Calculate the accuracy
+ accuracy = 100 - np.mean(np.abs(Y_prediction - test_set_y)) * 100
+ print("Test accuracy: {} %".format(accuracy))
+ return Y_prediction # Return the predictions for later use
+def visualize_data(train_set_x_orig, train_set_y, classes, index=56):
+ # Visualize the data at the given index
+ plt.imshow(train_set_x_orig[index])
+ plt.axis('off') # Turn off axis
+ plt.show() # Show the image
+ # Print the corresponding label (0 for non-cat, 1 for cat)
+ print(
+ "y = {}, it's a '{}' picture.".format(
+ train_set_y[index],
+ classes[np.squeeze(train_set_y[index])].decode("utf-8")
+ )
+ )
+# Load dataset
+train_set_x_orig, train_set_y, test_set_x_orig, test_set_y, classes = load_dataset()
+# Visualize cat image (index = 56)
+visualize_data(train_set_x_orig, train_set_y, classes, index=56) # Adjust index to display different image
+# Visualize non-cat image (index = 1 for example)
+visualize_data(train_set_x_orig, train_set_y, classes, index=1) # Non-cat image at index 1
+# Preprocess data
+train_set_x, test_set_x = preprocess_data(train_set_x_orig, test_set_x_orig)
+# Logistic Regression (Train and evaluate model)
+predictions = logistic_regression(train_set_x, train_set_y, test_set_x, test_set_y)
+# Example Output of Predictions (displaying the first 10 predictions)
+for i in range(10):
+ print(f"Image {i} is predicted as: {'Cat' if predictions[i] == 1 else 'Non-cat'}")
