@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import LabelEncoder
-dataset_path = r'E:/TYCS_527_AI/OnlineBusinessCustomers.csv'
+dataset_path = r'E:/OnlineBusinessCustomers.csv'
 collected_dataset = pd.read_csv(dataset_path)
 # Check for non-numeric columns and convert them if necessary
 print("Data Types of Columns:\n", collected_dataset.dtypes)
