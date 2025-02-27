@@ -1,0 +1,16 @@
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+weather = ['sunnny','sunny','overcast','rainy','rainy','rainy','overcast','sunny','sunny','rainy','sunny','overcast','overcast','rainy']
+
+temp = ['hot','hot','hot','mild','cool','cool','cool','mild','cool','mild','mild','mild','hot','mild']
+
+play = ['no','no','yes','yes','yes','no','yes','no','yes','yes','yes','yes','yes','no']
+from sklearn import preprocessing
+le = preprocessing.LabelEncoder()
+weather_encode = le.fit_transform(weather)
+print(weather_encode)
+temp_encode = le.fit_transform(temp)
+label = le.fit_transform(play)
+print("temp: ",temp_encode)
+print("play: ",label)
