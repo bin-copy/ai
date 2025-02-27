@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
-file_path = r'E:/TYCS_527_AI/pima-indians-diabetes.csv.xlsx'
+file_path = r'E:/pima-indians-diabetes.csv.xlsx'
 data = pd.read_excel(file_path)
 dataset = data.values # Convert to NumPy array for Keras compatibility
 # Separate features (X) and labels (y)
