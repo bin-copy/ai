@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score
+
+# Load your data (assuming you're using 'diabetes.csv' or another dataset)
+# If needed, adjust the target variable and feature columns accordingly
+df = pd.read_csv("diabetes.csv")
+
+# Assuming you want to predict a binary target column (e.g., 'Outcome' or 'target')
+# Split data into features (X) and target (y)
+X = df.drop(columns='Outcome')  # Adjust 'Outcome' if your target column is different
+y = df['Outcome']  # Adjust the target column name if necessary
+
+# Split data into training and testing sets
+X_train_bopt, X_test_bopt, y_train_bopt, y_test_bopt = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create and fit decision tree classifier without max depth limit
+tree = DecisionTreeClassifier(random_state=1)
+tree.fit(X_train_bopt, y_train_bopt)
+
+# Print information about the model
+print(f'Decision Tree has {tree.tree_.node_count} nodes with a maximum depth of {tree.tree_.max_depth}.')
+print(f'Model Accuracy for train data: {tree.score(X_train_bopt, y_train_bopt)}')
+print(f'Model Accuracy for test data: {tree.score(X_test_bopt, y_test_bopt)}')
+
+# Create and fit decision tree with maximum depth of 3
+tree = DecisionTreeClassifier(max_depth=3, random_state=1)
+tree.fit(X_train_bopt, y_train_bopt)
+
+# Plot the decision tree
+plt.figure(figsize=(25, 10))  			# Adjust the figure size to make it larger
+plot_tree(tree, feature_names=X.columns, 
+          class_names=['<=50K', '>50K'],  		# Adjust according to your classes
+          filled=True, rounded=True, fontsize=14)
+
+# Display the plot
+plt.title("Decision Tree Visualization")
+plt.show()
