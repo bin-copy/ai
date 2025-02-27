@@ -1,0 +1,56 @@
+import keras
+import sklearn
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt                      # Added for showing the plot
+from keras.models import Sequential
+from keras.layers import Dense, Input
+from keras.utils import to_categorical
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from keras.optimizers import Adam
+
+# Load the Iris dataset
+data = pd.read_csv("Iris.csv")
+
+# Show the first few rows of the dataset
+print(data.head())
+
+# Show the column names
+print(data.columns)
+
+# Visualize the dataset with pairplot (distribution of features)
+sns.pairplot(data, hue="Species")
+
+# Show the plot
+plt.show()  # Ensure the plot is displayed
+
+# Prepare feature matrix X (the input data) and target vector y (the labels)
+X = data.iloc[:, 1:5].values	 # Features: SepalLength, SepalWidth, PetalLength,  PetalWidth
+y = data.iloc[:, 5].values  		# Target: Species
+
+# Encode the target labels (species) as numerical values
+encoder = LabelEncoder()
+y1 = encoder.fit_transform(y)
+Y = pd.get_dummies(y1).values  		# One-hot encoding for multi-class classification
+
+# Split the dataset into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
+
+# Build the neural network model
+model = Sequential()
+model.add(Input(shape=(4,))) 		 # Input layer with 4 features
+model.add(Dense(40, activation='relu'))  		# Hidden layer with 40 neurons
+model.add(Dense(20, activation='relu')) 		 # Hidden layer with 20 neurons
+model.add(Dense(3, activation='softmax'))  	# Output layer with 3 classes (species)
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.02), loss='categorical_crossentropy', metrics=['accuracy'])
+# Train the model
+model.fit(X_train, y_train, epochs=10)
+
+# Evaluate the model on the test set
+pred = model.evaluate(X_test, y_test)
+# Print the accuracy of the model
+print("\nAccuracy: %.2f%%" % (pred[1] * 100))
