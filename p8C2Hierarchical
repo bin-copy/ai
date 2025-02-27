@@ -1,0 +1,43 @@
+import matplotlib.pyplot as plotter
+import pandas as pd
+import scipy.cluster.hierarchy as sch
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import LabelEncoder
+collectedDataset = pd.read_csv('E:/OnlineGroceryStore.csv')
+print(collectedDataset.dtypes) # Inspect the data types of each column
+print(collectedDataset.head()) # Check for the first few rows to see how the data looks
+# Identify non-numeric columns and encode them if needed
+label_encoder = LabelEncoder()
+# Convert non-numeric columns to numeric using LabelEncoder
+for column in collectedDataset.select_dtypes(include={'object'}).columns:
+ collectedDataset[column] = label_encoder.fit_transform(collectedDataset[column])
+print(collectedDataset.dtypes) # After conversion, check the data types
+# Ensure we are using only the numeric columns for clustering
+# We are assuming columns 3 and 4 contain relevant numeric data
+# Replace this with actual column indices if necessary
+X = collectedDataset.iloc[:, [3, 4]].values # Select only numeric columns for clustering
+# Check for missing values in the dataset
+print(collectedDataset.isnull().sum()) # This will print any columns with missing data
+# Limit the dataset size for testing (optional)
+# Try working with a smaller subset to avoid recursion depth issues
+X_subset = X[:100, :] # Use the first 100 rows for testing
+dendrogram = sch.dendrogram(sch.linkage(X_subset, method='ward'))
+plotter.title('Dendrogram') # Add plot title and axis labels
+plotter.xlabel('Online Business Customers')
+plotter.ylabel('Euclidean Distances')
+plotter.show()
+# Fit the Hierarchical Clustering Model to the dataset
+hc = AgglomerativeClustering(n_clusters=5, metric='euclidean', linkage='ward')
+Y_hc = hc.fit_predict(X)
+# Visualize the clusters
+plotter.scatter(X[Y_hc == 0, 0], X[Y_hc == 0, 1], s=100, c='red', label='Careful')
+plotter.scatter(X[Y_hc == 1, 0], X[Y_hc == 1, 1], s=100, c='blue', label='Standard')
+plotter.scatter(X[Y_hc == 2, 0], X[Y_hc == 2, 1], s=100, c='green', label='Target')
+plotter.scatter(X[Y_hc == 3, 0], X[Y_hc == 3, 1], s=100, c='cyan', label='Careless')
+plotter.scatter(X[Y_hc == 4, 0], X[Y_hc == 4, 1], s=100, c='magenta', label='Sensible')
+# Add plot title and axis labels
+plotter.title('Clusters of Online Business Customers')
+plotter.xlabel('Annual Income (k$)')
+plotter.ylabel('Spending Score (1-100)')
+plotter.legend()
+plotter.show()
