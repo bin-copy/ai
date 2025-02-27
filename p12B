@@ -1,0 +1,31 @@
+import networkx as nx
+# Read graph from file
+graph = nx.read_graphml(r"E:/crisis-network.graphml.xml")
+# (i) Density
+density = nx.density(graph)
+print(f"Density: {density:.4f}")
+# (ii) Degree
+degree = dict(graph.degree())
+print("\nDegree:")
+for node, deg in list(degree.items())[:5]:
+ print(f"{node}: {deg}")
+ print("... {truncated}")
+# (iii) Reciprocity (only for directed graphs)
+if graph.is_directed():
+ reciprocity = nx.reciprocity(graph)
+ print(f"\nReciprocity: {reciprocity:.4f}")
+else:
+ print("\nReciprocity is not defined for undirected graphs.")
+# (iv) Transitivity
+transitivity = nx.transitivity(graph)
+print(f"Transitivity: {transitivity:.4f}")
+# (v) Degree Centrality
+centralization = nx.degree_centrality(graph)
+print("\nDegree Centrality:")
+for node, cent in list(centralization.items())[:5]:
+ print(f"{node}: {cent:.4f}")
+# (vi) Clustering Coefficients
+clustering = nx.clustering(graph)
+print("\nClustering Coefficients:")
+for node, cluster_coeff in list(clustering.items())[:5]:
+ print(f"{node}: {cluster_coeff:.4f}")
