@@ -1,0 +1,52 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from keras.models import Sequential
+from keras.layers import Dense
+file_path = r'E:/TYCS_527_AI/pima-indians-diabetes.csv.xlsx'
+data = pd.read_excel(file_path)
+dataset = data.values # Convert to NumPy array for Keras compatibility
+# Separate features (X) and labels (y)
+x = dataset[:, 0:8] # Assuming first 8 columns are features
+y = dataset[:, 8] # Assuming the 9th column is the label
+# Create the model
+model = Sequential()
+model.add(Dense(12, activation='relu')) # ReLU activation
+model.add(Dense(8, activation='tanh')) # Tanh activation
+model.add(Dense(4, activation='linear')) # Linear activation
+model.add(Dense(1, activation='sigmoid')) # Sigmoid activation
+# Compile the model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# Fit the model
+model.fit(x, y, epochs=150, batch_size=10, verbose=0)
+# Evaluate the model
+_, accuracy = model.evaluate(x, y)
+print('Accuracy: %.2f' % (accuracy * 100))
+predictions = (model.predict(x) > 0.5).astype(int)
+for i in range(len(x)): # Display predictions
+ print('%s => %d (expected %d)' % (x[i].tolist(), predictions[i], y[i]))
+x_vals = np.linspace(-10, 10, 100) # Plot activation functions
+relu = np.maximum(0, x_vals) # ReLU
+sigmoid = 1 / (1 + np.exp(-x_vals)) # Sigmoid
+tanh = np.tanh(x_vals) # Tanh
+# Linear (identity function)
+linear = x_vals
+plt.figure(figsize=(12, 8)) # Plotting
+plt.subplot(2, 2, 1)
+plt.plot(x_vals, relu)
+plt.title('ReLU Activation Function')
+plt.grid()
+plt.subplot(2, 2, 2)
+plt.plot(x_vals, sigmoid)
+plt.title('Sigmoid Activation Function')
+plt.grid()
+plt.subplot(2, 2, 3)
+plt.plot(x_vals, tanh)
+plt.title('Tanh Activation Function')
+plt.grid()
+plt.subplot(2, 2, 4)
+plt.plot(x_vals, linear)
+plt.title('Linear Activation Function')
+plt.grid()
+plt.tight_layout()
+plt.show()
