@@ -1,0 +1,50 @@
+# Variables and Constraints for the CSP problem
+VARIABLES = ["A", "B", "C", "D", "E", "F", "G"]
+CONSTRAINTS = [
+    ("A", "B"), ("A", "C"), ("B", "C"), ("B", "D"), ("B", "E"),
+    ("C", "E"), ("C", "F"), ("D", "E"), ("E", "F"), ("E", "G"), ("F", "G")
+]
+
+# Backtracking search function
+def backtrack(assignment):
+    """Runs backtracking search to find an assignment."""
+    # Check if assignment is complete (all variables assigned)
+    if len(assignment) == len(VARIABLES):
+        return assignment
+
+    # Select an unassigned variable
+    var = select_unassigned_variable(assignment)
+    # Try all possible values for the variable
+    for value in ["Monday", "Tuesday", "Wednesday"]:
+        new_assignment = assignment.copy()
+        new_assignment[var] = value
+
+        # If the new assignment is consistent, recursively call backtrack
+        if consistent(new_assignment):
+            result = backtrack(new_assignment)
+            if result is not None:
+                return result
+    return None 	 # If no solution found
+# Function to select the next unassigned variable (returns the first unassigned variable)
+def select_unassigned_variable(assignment):
+    """Chooses a variable not yet assigned, in order."""
+    for variable in VARIABLES:
+        if variable not in assignment:
+            return variable
+    return None  		# If all variables are assigned
+
+# Function to check if the current assignment is consistent with the constraints
+def consistent(assignment):
+    """Checks to see if an assignment is consistent."""
+    # Check each constraint
+    for (x, y) in CONSTRAINTS:
+        # Only consider arcs where both variables are assigned
+        if x in assignment and y in assignment:
+            # If both have the same value, the assignment is inconsistent
+            if assignment[x] == assignment[y]:
+                return False
+    return True  		# If no conflicts, assignment is consistent
+
+# Perform backtracking search and print the solution
+solution = backtrack(dict())
+print(solution)
