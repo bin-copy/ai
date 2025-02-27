@@ -1,7 +1,7 @@
 import pandas as pd
 from apyori import apriori
 # Load the dataset
-file_path = 'E:/TYCS_527_AI/pima-indians-diabetes.csv.xlsx'
+file_path = 'E:/pima-indians-diabetes.csv.xlsx'
 try:
  # Adjust file reading based on the actual format
  collectedDataset = pd.read_excel(file_path, header=None) # Use pd.read_csv if it's a CSV file
